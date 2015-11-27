@@ -31,7 +31,7 @@ def mkdir():
 	else :														# Else, Make a Directory
 		os.makedirs("UWBAT_"+"%s"%timestamp+"\\collection\\IE10++")
 		os.makedirs("UWBAT_"+"%s"%timestamp+"\\collection\\IE10--")
-		os.makedirs("UWBAT_"+"%s"%timestamp+"\\collection\\Chrome")
+		os.makedirs("UWBAT_"+"%s"%timestamp+"\\collection\\Chrome\\Cache")
 # Make base path directory (for IE10++, IE10--, Chrome)
 #############################################
 #############################################
@@ -40,13 +40,12 @@ def mkdir():
 
 
 
-def IE10_KilltoProcesses():								
+def IE10_copydb():	
 	os.system('taskkill.exe /f /im iexplore.exe')
 	os.system('taskkill.exe /f /im dllhost.exe')
 	os.system('taskkill.exe /f /im taskhost.exe')
 	# Kill to 'WebCacheV01.dat' processes (IE10++) 
 
-def IE10_copydb():							
 	if os.path.isdir('C:\Users\%s\AppData\Local\Microsoft\Windows\WebCache'%username) :
 		os.chdir('C:\Users\%s\AppData\Local\Microsoft\Windows\WebCache'%username)
 		os.system('esentutl /r V01 /d')
@@ -141,6 +140,15 @@ def Chrome_copydb():
 	shutil.copy2("Web Data", "C:\\Users\%s\Desktop\\UWBAT_"%username+"%s"%timestamp+"\\collection\\Chrome")
 	# Copy to Directory ___Web Data___
 
+	os.system('taskkill.exe /f /im chrome.exe')
+	# Kill to 'chrome.exe' processes (Chrome) 
+
+	os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default\Cache'%username)
+	cache_files = os.listdir('./')
+	for files in range(len(cache_files)) :
+		shutil.copy2(cache_files[files], "C:\\Users\%s\Desktop\\UWBAT_"%username+"%s"%timestamp+"\\collection\\Chrome\\Cache")
+	# Copy to Directory ___Cache___
+
 def Chrome_dbrename():
 	os.chdir("C:\\Users\%s\Desktop\\UWBAT_"%username+"%s"%timestamp+"\\collection\\Chrome")
 	# Choose Directory
@@ -165,7 +173,6 @@ def main():
 	mkdir()
 	# Make base path directory (for IE10++, IE10--, Chrome)
 
-   	IE10_KilltoProcesses()
 	IE10_copydb()
 #	IE10_repairEDB()
 	# IE10++ collector...
