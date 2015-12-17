@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 """
 BoB Project Team For W.C
 
@@ -10,7 +12,6 @@ pm : Hanrim Choi
 member : Suwon Kim jihwan Lee, Dongwoo Kim
 last edited : Nov, 2015
 """
-#!/usr/bin/python
 
 from struct import pack, unpack, calcsize
 
@@ -1594,22 +1595,347 @@ class ESENT_DB:
 
         return record
 
-import sys, sqlite3, csv, sys, os
+import sys, sqlite3, csv, sys, os, urllib, codecs
+import shutil
+import time
+import platform
+import re
+import binascii
 from PySide import QtGui, QtCore
 from datetime import datetime, timedelta
 
-global_check = 0
+#################################
+#####	  GET USER NAME		#####
+username = os.getenv('USERNAME')		
+#################################
+
+#################################
+#####	  GET LOCAL TIME	#####
+now = time.localtime()
+timestamp = "%04d%02d%02d-%02d%02d%02d" %(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)		
+#################################
+
+#################################
+#####	  CHECK Local OS	#####
+local_os = platform.release()
+#################################
+
+
+
+def mkdir(fname):
+    	
+	os.chdir(fname)					# Change Directory
+	if os.path.isdir("UWA_"+"%s"%timestamp) :					# If Directory is exist,
+		pass													# PASS!
+	else :														# Else, Make a Directory
+		os.makedirs("UWA_"+"%s"%timestamp+"\\collection\\IE10++")
+		os.makedirs("UWA_"+"%s"%timestamp+"\\collection\\IE10--")
+		os.makedirs("UWA_"+"%s"%timestamp+"\\collection\\Chrome\\Cache")
+# Make base path directory (for IE10++, IE10--, Chrome)
+#############################################
+#############################################
+### ___unified_WebBrowser_AnalysisTool___ ###
+#############################################
+
+
+
+def IE10_copydb(fname):	
+	os.system('taskkill.exe /f /im iexplore.exe')
+	os.system('taskkill.exe /f /im dllhost.exe')
+	os.system('taskkill.exe /f /im taskhost.exe')
+	# Kill to 'WebCacheV01.dat' processes (IE10++) 
+
+	if os.path.isdir('C:\Users\%s\AppData\Local\Microsoft\Windows\WebCache'%username) :
+		os.chdir('C:\Users\%s\AppData\Local\Microsoft\Windows\WebCache'%username)
+		os.system('esentutl /r V01 /d')
+		os.system('esentutl /y WebCacheV01.dat /d %s'%fname+'\\UWA_%s'%timestamp+"\\collection\\IE10++\\WebCacheV01.dat")
+	# Copy to base directory -WebCacheV01.dat- (IE10++)
+
+#def IE10_repairEDB():
+#	os.chdir('C:\Users\%s\Desktop\UWBAT_'%username+"%s"%timestamp+"\\collection\\IE10++")
+#	if os.path.isfile('C:\Users\%s\Desktop\UWBAT_'%username+"%s"%timestamp+"\\collection\\IE10++\\WebCacheV01.dat") :
+#		os.system('esentutl /y WebCacheV01.dat /d WebCacheV01.dat')
+	# Repair database state (IE10++)
+	#########################################
+	#########################################
+	### ___IE10++___ - collection fuction ###
+	#########################################
+
+def IE9_copyfile(fname):
+    os.makedirs("\\UWA_"+"%s"%timestamp+"\\collection\\IE10--")
+    
+    if os.path.isfile('C:\Users\%s\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5\index.dat'%username) :
+        os.chdir(fname)
+        os.chdir('C:\Users\%s\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5'%username)
+        shutil.copy2("index.dat", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+        if os.path.isfile("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--\\index.dat") :
+            os.chdir("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+            os.rename("index.dat", 'index_cache.dat')
+   # Copy to base directory -index.dat(cache)- (IE10--)
+
+    if os.path.isfile('C:\Users\%s\AppData\Roaming\Microsoft\Windows\Cookies\index.dat'%username) :
+        os.chdir(fname)
+        os.chdir('C:\Users\%s\AppData\Roaming\Microsoft\Windows\Cookies'%username)
+        shutil.copy2("index.dat", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+        if os.path.isfile("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--\\index.dat") :
+            os.chdir("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+            os.rename("index.dat", 'index_cookies.dat')
+    # Copy to base directory -index.dat(Cookies)- (IE10--)
+
+    if os.path.isfile('C:\Users\%s\AppData\Roaming\Microsoft\Windows\IEDownloadHistory\index.dat'%username) :
+        os.chdir(fname)
+        os.chdir('C:\Users\%s\AppData\Roaming\Microsoft\Windows\IEDownloadHistory'%username)
+        shutil.copy2("index.dat", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+        if os.path.isfile("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--\\index.dat") :
+            os.chdir("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+            os.rename("index.dat", 'index_download.dat')
+    # Copy to base directory -index.dat(IE Downloadlist)- (IE10--)
+
+    if os.path.isfile('C:\Users\%s\AppData\Local\Microsoft\Windows\History\History.IE5\index.dat'%username) :
+        os.chdir(fname)
+        os.chdir('C:\Users\%s\AppData\Local\Microsoft\Windows\History\History.IE5'%username)
+        shutil.copy2("index.dat", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+        if os.path.isfile("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--\\index.dat") :
+            os.chdir("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\IE10--")
+            os.rename("index.dat", 'index_history.dat')
+   # Copy to base directory -index.dat(History)- (IE10--)
+   #########################################
+   #########################################
+   ### ___IE10--___ - collection fuction ###
+   #########################################
+
+def Chrome_copydb(fname):
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Cookies", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Cookies___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Extension Cookies", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Extension Cookies___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Favicons", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Favicons___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("History", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___History___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Login Data", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Login Data___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Network Action Predictor", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Network Action Predictor___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Origin Bound Certs", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Origin Bound Certs___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("QuotaManager", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___QuotaManager___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Shortcuts", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Shortcuts___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Top Sites", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Top Sites___
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default'%username)
+    shutil.copy2("Web Data", "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Copy to Directory ___Web Data___
+    
+    os.system('taskkill.exe /f /im chrome.exe')
+    # Kill to 'chrome.exe' processes (Chrome)
+    
+    os.chdir('C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default\Cache'%username)
+    cache_files = os.listdir('./')
+    #for files in range(len(cache_files)) :
+    #    shutil.copy2(cache_files[files], "%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome\\Cache")
+    # Copy to Directory ___Cache___
+
+def Chrome_dbrename(fname):
+    os.chdir("%s"%fname+"\\UWA_%s"%timestamp+"\\collection\\Chrome")
+    # Choose Directory
+    
+    os.rename("Cookies", 'Cookies.db')
+    os.rename("Extension Cookies", 'Extension Cookies.db')
+    os.rename("Favicons", 'Favicons.db')
+    os.rename("History", 'History.db')
+    os.rename("Login Data", 'Login Data.db')
+    os.rename("Network Action Predictor", 'Network Action Predictor.db')
+    os.rename("Origin Bound Certs", 'Origin Bound Certs.db')
+    os.rename("QuotaManager", 'QuotaManager.db')
+    os.rename("Shortcuts", 'Shortcuts.db')
+    os.rename("Top Sites", 'Top Sites.db')
+    os.rename("Web Data", 'Web Data.db')
+
+"""
+IE Parser
+"""
+block_size = 128
+signature = "55524c20"
+
+count=0
+
+def WindowTimeConverter(gmt,time):
+    gmt =0 
+    return datetime(1601, 1, 1) + timedelta(microseconds=int(time, 16) / 10.) + timedelta(hours=gmt)
+
+def IE9parser(fname):
+    if os.path.isfile('%s'%fname+"\\collection\\IE10--\\index_cache.dat"):
+        filepath = '%s'%fname+"\\collection\\IE10--\\index_cache.dat"
+        con = sqlite3.connect(fname+"\\IE9parser.db")
+        cursor = con.cursor()
+        if filepath == "index_hisotry.dat":
+            cursor.execute("CREATE TABLE Hisotry(URL text, AccessedTime text,CreateTime text)")
+        if filepath == "index_cache.dat":
+            cursor.execute("CREATE TABLE Cache(URL text, AccessedTime text,CreateTime text)")
+        if filepath == "index_cookies.dat":
+            cursor.execute("CREATE TABLE Cookies(URL text, AccessedTime text,CreateTime text)")
+        index=0
+        gdata = {}
+
+        with open(filepath, "rb") as f:
+            for m in re.finditer( b'\x55\x52\x4c\x20', f.read()):
+                #print "%X" % m.start()
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+
+                f.seek(m.start() + 104) #Move to URL STRING
+                data = f.read(record_size - 104).split(b'\x00')
+            
+                gdata[index] = data[0]
+                #print gdata[index]
+
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+                try:
+                    f.seek(m.start() + 16) 
+                    data = f.read(8).encode("hex")
+                    #print data
+                    time = "".join([data[i:i+2] for i in range(0, len(data), 2)][::-1]).lstrip('0')
+                    #t = data[::-1]
+                    convert_time = WindowTimeConverter(0,time)
+                    #print convert_time
+
+                    timedata = convert_time
+                #t = data[::-1]
+                except ValueError:
+                    pass
+
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+                try:
+                    f.seek(m.start() + 8) 
+                    data = f.read(8).encode("hex")
+                    #print data
+                    Create_time = "".join([data[i:i+2] for i in range(0, len(data), 2)][::-1]).lstrip('0')
+                    #t = data[::-1]
+                    Create_convert_time = WindowTimeConverter(0,Create_time)
+
+                    Create_time_data = Create_convert_time
+                #t = data[::-1]
+                except ValueError:
+                    pass
+
+                if filepath == "index_hisotry.dat":
+                    cursor.execute("INSERT INTO History VALUES(?,?,?)", ([gdata[index],timedata,Create_time_data]))
+                if filepath == "index_cache.dat":
+                    cursor.execute("INSERT INTO Cache VALUES(?,?,?)", ([gdata[index],timedata,Create_time_data]))
+                if filepath == "index_cookies.dat":
+                    cursor.execute("INSERT INTO Cookies VALUES(?,?,?)", ([gdata[index],timedata,Create_time_data]))
+                index = index+1
+                #print index
+                #index=index+1
+            con.commit()
+            con.close()
+
+def IEDownloadparser(fname):
+    if os.path.isfile('%s'%fname+"\\collection\\IE10--\\index_download.dat"):
+        filepath = '%s'%fname+"\\collection\\IE10--\\index_download.dat"
+        con = sqlite3.connect(fname+"\\IE9DownLoadParsers.db")
+        cursor = con.cursor()
+        cursor.execute("CREATE TABLE Downlist(URL text,AccessedTime text,FileSize text)")
+        index=0
+
+        with open(filepath, "rb") as f:
+            for m in re.finditer( b'\x55\x52\x4c\x20', f.read()):
+                #print "%X" % m.start()
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+
+                f.seek(m.start() + 516) #Move to Download STRING
+                data = f.read(record_size - 516).split(b'\x00\x00')
+
+                final_data = data[0].replace("\x00","")
+
+                f.seek(m.start() + 516 + len(data[0]))
+                path_data = f.read(record_size - (516 + len(data[0]))).split(b'\x00\xEF')
+
+                final_path_data = path_data[0].replace("\x00","")
+
+                #print final_path_data
+
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+
+                f.seek(m.start() + 228)
+                data = f.read(4).encode("hex")
+                file_size = int("".join([data[i:i+2] for i in range(0, len(data), 2)][::-1]),16)
+            
+                #print file_size
+
+                f.seek(m.start()+4)
+
+                block_count = f.read(4).encode("hex")
+                record_size = block_size * int("".join([block_count[i:i+2] for i in range(0, len(block_count), 2)][::-1]).lstrip('0'), 16)
+                try:
+                    f.seek(m.start() + 16) 
+                    data = f.read(8).encode("hex")
+                    #print data
+                    Create_time = "".join([data[i:i+2] for i in range(0, len(data), 2)][::-1]).lstrip('0')
+                    #t = data[::-1]
+                    Create_convert_time = WindowTimeConverter(0,Create_time)
+
+                    Create_time_data = Create_convert_time
+                #t = data[::-1]
+                except ValueError:
+                    pass
+            
+                cursor.execute("INSERT INTO Downlist VALUES(?,?,?)", (final_data,Create_time_data,file_size))
+
+                index = index+1
+                #print index
+                #index=index+1
+            con.commit()
+            con.close()
 
 class WC_Data_Insert():
     def __init__(self, fname):
-        self.fname = fname
-        
+        self.dname = fname
+        self.fname = '%s'%fname+"\\collection\\IE10++\\WebCacheV01.dat"
+
         ese = ESENT_DB(self.fname)
-        if os.path.isfile("WC_DB.db"):
-            os.remove("WC_DB.db")
-            conn = sqlite3.connect("WC_DB.db")
+        if os.path.isfile(self.dname+"\\WC_DB.db"):
+            os.remove(self.dname+"\\WC_DB.db")
+            conn = sqlite3.connect(self.dname+"\\WC_DB.db")
         else:
-            conn = sqlite3.connect("WC_DB.db")
+            conn = sqlite3.connect(self.dname+"\\WC_DB.db")
         cursor = conn.cursor()
         num = 0
         data = {}
@@ -1619,7 +1945,7 @@ class WC_Data_Insert():
         for i in tablename:
             Data_table = ese.openTable(tablename[i])
             Container_ = tablename[i].find("Container_")
-            if Container_ == 0:
+            if Container_ >= 0:
                 cursor.execute("CREATE TABLE WC_"+tablename[i]+"(EntryId text, ContainerId text, CacheId text, UrlHash text, SecureDirectory text, FileSize text, Type text, Flags text, AccessCount text, SyncTime text, CreationTime text, ExpiryTime text, ModifiedTime text, AccessedTime text, PostCheckTime text, SyncCount text, ExemptionDelta text, Url text, Filename text, FileExtension text, RequestHeaders text, ResponseHeaders text, RedirectUrl text, Groupp text, ExtraData text)")
                 while True:
                     record = ese.getNextRow(Data_table)
@@ -1633,7 +1959,7 @@ class WC_Data_Insert():
                             num=0
                             break;
             DependencyEntry_ = tablename[i].find("DependencyEntry_")
-            if DependencyEntry_ == 0:
+            if DependencyEntry_ >= 0:
                 cursor.execute("CREATE TABLE WC_"+tablename[i]+"(EntryId text, UrlSchemaType text, Port text, ModifiedTime text, Url text, Data text, HostName text)")
                 while True:
                     record = ese.getNextRow(Data_table)
@@ -1647,7 +1973,7 @@ class WC_Data_Insert():
                             num=0
                             break;
             AppCache_ = tablename[i].find("AppCache_")
-            if AppCache_ == 0:
+            if AppCache_ >= 0:
                 cursor.execute("CREATE TABLE WC_"+tablename[i]+"(AppCacheId text, UrlHash text, State text, AccessTime text, Size text, Url text, Filename text, ParsedData text)")
                 while True:
                     record = ese.getNextRow(Data_table)
@@ -1661,7 +1987,7 @@ class WC_Data_Insert():
                             num=0
                             break;
             HstsEntry_ = tablename[i].find("HstsEntry_")
-            if HstsEntry_ == 0:
+            if HstsEntry_ >= 0:
                 cursor.execute("CREATE TABLE WC_"+tablename[i]+"(EntryId text, MinimizedRDomainHash text, MinimizedRDomainLength text, IncludeSubdomains text, Expires text, LastTimeUsed text, RDomain text)")
                 while True:
                     record = ese.getNextRow(Data_table)
@@ -1675,7 +2001,7 @@ class WC_Data_Insert():
                             num=0
                             break;
             AppCacheEntry_ = tablename[i].find("AppCacheEntry_")
-            if AppCacheEntry_ == 0:
+            if AppCacheEntry_ >= 0:
                 cursor.execute("CREATE TABLE WC_"+tablename[i]+"(EntryId text, AppCacheId text, UrlHash text, Flags text, Master text, ExpiryTime text, ModifiedTime text, PostCheckTime text, Type text, FileSize text, Url text, RequestHeaders text, ResponseHeaders text, Filename text, ExtraData text)")
                 while True:
                     record = ese.getNextRow(Data_table)
@@ -1821,51 +2147,297 @@ class WC_Data_Parser():
         conn.close()
         ese.close()
 
+class SearchKey_Parser():
+    def __init__(self, fname):
+        conn = sqlite3.connect("WC_DB.db")
+        cursor = conn.cursor()
+        #appcache , appcacheentry , containers, dependency entry,
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table', 'view') ORDER BY 1")
+        name = cursor.fetchall()
+        num=0
+        index = 0
+        tablename = {}
+
+        head_naver="search.naver.com/search.naver?" # key query =
+        head_daum="search.daum.net/search?" # key = q
+        head_google="www.google.co.kr/search?"  # key = q or oq
+        head_nate="search.daum.net/nate?"   # key = q
+        head_yahoo="search.yahoo.com/search;"   # key = p
+        head_bing="www.bing.com/search?"    # key = q
+        head_facebook="www.facebook.com/search/"    # group 내의 search는 search가 뒤에있음. key = q
+
+        print ("\nStart")
+        for i in name:
+            tablename[num] = i
+            num = num+1
+            for tablenamelist in i:
+                print tablenamelist
+                Container_ = tablenamelist.find("Container_")
+                if Container_ >= 0:
+                    cursor.execute("select Url from "+tablenamelist+"")
+                    Urldata = cursor.fetchall()
+                    for temp in Urldata:
+                        for data in temp:
+                            if data.find(head_naver) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('query=') == 0:
+                                        keyword_naver = separate[i][6:]
+                                        print urllib.unquote(str(unicode(keyword_naver))).decode('utf8').replace('+',' ')
+                                        #print "key",urllib.unquote(str(unicode(keyword_naver))).decode('utf8')
+                                        #print "s",urllib.unquote(keyword_naver).encode('utf-8').decode('utf-8').decode('utf-8').replace('+',' ')
+                                        break
+                            elif data.find(head_daum) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('q=') == 0:
+                                        keyword_daum = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_daum))).decode('utf8').replace('+',' ')
+                                        break
+                            elif data.find(head_google) >= 0:
+                                separate=data.replace('?','&').split('&')
+                                for i in range(len(separate)-1,0,-1):
+                                    if separate[i].find('q=')==0 & ~separate[i].find('oq='):
+                                        keyword_google = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_google))).decode('utf8').replace('+',' ')
+                                        break
+                    continue;
+                DependencyEntry_ = tablenamelist.find("DependencyEntry_")
+                if DependencyEntry_ >= 0:
+                    cursor.execute("select Url from "+tablenamelist+"")
+                    Urldata = cursor.fetchall()
+                    for temp in Urldata:
+                        for data in temp:
+                            if data.find(head_naver) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('query=') == 0:
+                                        keyword_naver = separate[i][6:]
+                                        print urllib.unquote(str(unicode(keyword_naver))).decode('utf8').replace('+',' ')
+                                        #print "key",urllib.unquote(str(unicode(keyword_naver))).decode('utf8')
+                                        #print "s",urllib.unquote(keyword_naver).encode('utf-8').decode('utf-8').decode('utf-8').replace('+',' ')
+                                        break
+                            elif data.find(head_daum) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('q=') == 0:
+                                        keyword_daum = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_daum))).decode('utf8').replace('+',' ')
+                                        break
+                            elif data.find(head_google) >= 0:
+                                separate=data.replace('?','&').split('&')
+                                for i in range(len(separate)-1,0,-1):
+                                    if separate[i].find('q=')==0 & ~separate[i].find('oq='):
+                                        keyword_google = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_google))).decode('utf8').replace('+',' ')
+                                        break
+                    continue;
+                AppCache_ = tablenamelist.find("AppCache_")
+                if AppCache_ >= 0:
+                    cursor.execute("select Url from "+tablenamelist+"")
+                    Urldata = cursor.fetchall()
+                    for temp in Urldata:
+                        for data in temp:
+                            if data.find(head_naver) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('query=') == 0:
+                                        keyword_naver = separate[i][6:]
+                                        print urllib.unquote(str(unicode(keyword_naver))).decode('utf8').replace('+',' ')
+                                        #print "key",urllib.unquote(str(unicode(keyword_naver))).decode('utf8')
+                                        #print "s",urllib.unquote(keyword_naver).encode('utf-8').decode('utf-8').decode('utf-8').replace('+',' ')
+                                        break
+                            elif data.find(head_daum) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('q=') == 0:
+                                        keyword_daum = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_daum))).decode('utf8').replace('+',' ')
+                                        break
+                            elif data.find(head_google) >= 0:
+                                separate=data.replace('?','&').split('&')
+                                for i in range(len(separate)-1,0,-1):
+                                    if separate[i].find('q=')==0 & ~separate[i].find('oq='):
+                                        keyword_google = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_google))).decode('utf8').replace('+',' ')
+                                        break
+                    continue;
+                AppCacheEntry_ = tablenamelist.find("AppCacheEntry_")
+                if AppCacheEntry_ >= 0:
+                    cursor.execute("select Url from "+tablenamelist+"")
+                    Urldata = cursor.fetchall()
+                    for temp in Urldata:
+                        for data in temp:
+                            if data.find(head_naver) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('query=') == 0:
+                                        keyword_naver = separate[i][6:]
+                                        print urllib.unquote(str(unicode(keyword_naver))).decode('utf8').replace('+',' ')
+                                        #print "key",urllib.unquote(str(unicode(keyword_naver))).decode('utf8')
+                                        #print "s",urllib.unquote(keyword_naver).encode('utf-8').decode('utf-8').decode('utf-8').replace('+',' ')
+                                        break
+                            elif data.find(head_daum) >= 0:
+                                separate=data.split('&')
+                                for i in range(0,len(separate)):
+                                    if separate[i].find('q=') == 0:
+                                        keyword_daum = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_daum))).decode('utf8').replace('+',' ')
+                                        break
+                            elif data.find(head_google) >= 0:
+                                separate=data.replace('?','&').split('&')
+                                for i in range(len(separate)-1,0,-1):
+                                    if separate[i].find('q=')==0 & ~separate[i].find('oq='):
+                                        keyword_google = separate[i][2:]
+                                        print urllib.unquote(str(unicode(keyword_google))).decode('utf8').replace('+',' ')
+                                        break
+                    continue;
+                
+        conn.commit()
+        conn.close()
+
 class Window(QtGui.QMainWindow):
     def __init__(self, parent=None):                                                             # init
         super(Window, self).__init__(parent)
         
+        self.fdirectory = None
         self.initUI()
 
-    def initUI(self):                                                               # UI Setting
-        Vlayout = QtGui.QVBoxLayout()
-        Hlayout = QtGui.QHBoxLayout()
+    def initUI(self):
+        #first Tab UI Setting
+        self.Vlayout = QtGui.QVBoxLayout()
+        self.Hlayout = QtGui.QHBoxLayout()
         
+        self.TabWidget = QtGui.QTabWidget()
         self.TableWidget = QtGui.QTableWidget()
-        self.listWidget = QtGui.QListWidget()
+        self.WC_listWidget = QtGui.QListWidget()
+        self.Indexdat_listWidget = QtGui.QListWidget()
+        self.Chrome_listWidget = QtGui.QListWidget()
+        self.listTabWidget = QtGui.QTabWidget()
+        self.listTabWidget.setMaximumWidth(300)
         
-        self.setting_listwidget()
-        self.setting_tablewidget()
-        self.listWidget.itemClicked.connect(self.resetting_tablewidget)
+        #self.Tabbar.currentChanged.connect(self.setting_SearchTab)
+
+        self.setting_Indexdat_listWidget()
+        self.setting_WC_listWidget()
+        self.setting_Indexdat_tablewidget()
+        self.setting_WC_tablewidget()
+        self.Indexdat_listWidget.itemClicked.connect(self.resetting_Indexdat_tablewidget)
+        self.WC_listWidget.itemClicked.connect(self.resetting_WC_tablewidget)
         #self.setting_setting_tablewidget()
         #self.connect(self.listWidget, QtCore.SIGNAL("itemDoubleClicked(QtGui.QListWidgetItem)"), self.setting_tablewidget())
 
-        Hlayout.addWidget(self.listWidget)
-        Hlayout.addWidget(self.TableWidget)
+        self.listTabWidget.addTab(self.Indexdat_listWidget, "IE ~9")
+        self.listTabWidget.addTab(self.WC_listWidget, "IE 10~")
+        self.listTabWidget.addTab(self.Chrome_listWidget, "Chrome")
 
-        widget = QtGui.QWidget(self)
-        widget.setLayout(Hlayout)
-        self.setCentralWidget(widget)
+        self.splitter1 = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter1.addWidget(self.listTabWidget)
+        self.splitter1.addWidget(self.TableWidget)
+        
+        #self.Hlayout.addWidget(self.listWidget)
+        self.Hlayout.addWidget(self.splitter1)
+
+        #self.Vlayout.addWidget(self.Tabbar)
+        #self.Vlayout.addLayout(self.Hlayout)
+               
+        self.main_widget = QtGui.QWidget(self)
+        self.main_widget.setLayout(self.Hlayout)
+        
+        #self.TabWidget.setLayout(self.Vlayout)
+       
+        #second Tab UI Setting
+        self.second_Vlayout = QtGui.QVBoxLayout()
+        self.second_Hlayout = QtGui.QHBoxLayout()
+        
+        self.second_TableWidget = QtGui.QTableWidget()
+        self.second_listWidget = QtGui.QListWidget()
+        self.second_listWidget.setMaximumWidth(300)
+        self.second_Frame = QtGui.QFrame()
+        self.second_Frame.setFrameShape(QtGui.QFrame.StyledPanel)
+
+        self.splitter2 = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter2.addWidget(self.second_listWidget)
+        self.splitter2.addWidget(self.second_TableWidget)
+
+        self.second_Hlayout.addWidget(self.splitter2)
+
+        self.second_widget = QtGui.QWidget(self)
+        self.second_widget.setLayout(self.second_Hlayout)
+
+        #third Tab UI Setting
+        self.third_Vlayout = QtGui.QVBoxLayout()
+        self.third_Hlayout = QtGui.QHBoxLayout()
+
+        self.third_Frame = QtGui.QFrame()
+        self.third_Frame.setFrameShape(QtGui.QFrame.StyledPanel)
+
+        self.third_Hlayout.addWidget(self.third_Frame)
+
+        self.third_widget = QtGui.QWidget(self)
+        self.third_widget.setLayout(self.third_Hlayout)
+
+        self.TabWidget.addTab(self.main_widget, "Raw")
+        self.TabWidget.addTab(self.second_widget, "Analysis")
+        self.TabWidget.addTab(self.third_widget, "Search Word")
+
+        #UI start
+        self.setCentralWidget(self.TabWidget)
                 
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)              # MenuBar Setting
+        #exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)              # MenuBar Setting
+        exitAction = QtGui.QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
+        exitAction.setStatusTip('Exit')
         exitAction.triggered.connect(self.close)
 
-        FopenAction = QtGui.QAction(QtGui.QIcon('Fopen.png'), '&File Open', self)
-        FopenAction.setShortcut('Ctrl+O')
-        FopenAction.setStatusTip('Select File')
-        FopenAction.triggered.connect(self.Fileopen)
+        AnalysisAction = QtGui.QAction(QtGui.QIcon('Analysis.png'), '&Analysis', self)
+        AnalysisAction.setShortcut('Ctrl+A')
+        AnalysisAction.setStatusTip('Data Analysis')
+        AnalysisAction.triggered.connect(self.Analysisopen)
         
+        CollectAction = QtGui.QAction('&Collect', self)
+        CollectAction.setShortcut('Ctrl+C')
+        CollectAction.setStatusTip('Web Data Collect')
+        CollectAction.triggered.connect(self.Collecteropen)
+
+        FilterAction = QtGui.QAction('&Filter', self)
+        FilterAction.setShortcut('Ctrl+F')
+        FilterAction.setStatusTip('Data Filtering')
+        FilterAction.triggered.connect(self.Filter)
+
+        ColumnAction = QtGui.QAction('&Column', self)
+        ColumnAction.setShortcut('Ctrl+S')
+        ColumnAction.setStatusTip('Table Column Setting')
+        #CollectAction.triggered.connect(self.Collecteropen)
+
+        WriterAction = QtGui.QAction('&Writer', self)
+        WriterAction.setShortcut('Ctrl+W')
+        WriterAction.setStatusTip('Writer Information')
+        WriterAction.triggered.connect(self.Writeropen)
+
+        VersionAction = QtGui.QAction('&Version', self)
+        VersionAction.setShortcut('Ctrl+V')
+        VersionAction.setStatusTip('Version Information')
+        VersionAction.triggered.connect(self.Versionopen)
+
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(FopenAction)
         fileMenu.addAction(exitAction)
         fileMenu = menubar.addMenu('&Tool')
+        fileMenu.addAction(CollectAction)
+        fileMenu.addAction(AnalysisAction)
+        fileMenu.addAction(FilterAction)
         fileMenu = menubar.addMenu('&View')
+        fileMenu.addAction(ColumnAction)
         fileMenu = menubar.addMenu('&Help')
+        fileMenu.addAction(WriterAction)
+        fileMenu.addAction(VersionAction)
 
         self.statusBar()                                                                # StatusBar Setting
+        
+        toolbar = self.addToolBar('&Toolbar')
+        toolbar.addAction(FilterAction)
 
         appIcon = QtGui.QIcon('appIcon.png')                                            # Icon Setting
         self.setWindowIcon(appIcon)
@@ -1873,26 +2445,70 @@ class Window(QtGui.QMainWindow):
         QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Cleanlooks'))
 
         self.setGeometry(100, 100, 1300, 800)                                           # Window Setting
-        self.setWindowTitle('Web Browser Analysis Tool')
+        self.setWindowTitle('UWA (Unfied Web Analyer)')
         self.show()
 
-    def Fileopen(self):
-        dlg = MyPopup(self)
-        dlg.show()
-        dlg.exec_()
+    def Analysisopen(self):
+        Adlalog = MyPopup(self)
+        Adlalog.show()
+        Adlalog.exec_()
 
-    def setting_listwidget(self):        
+    def Collecteropen(self):
+        Cdlalog = CollerterPopup(self)
+        Cdlalog.show()
+        Cdlalog.exec_()
+
+    def Writeropen(self):
+        Wdlalog = WriterPopup(self)
+        Wdlalog.show()
+        Wdlalog.exec_()
+
+    def Versionopen(self):
+        Vdlalog = VersionPopup(self)
+        Vdlalog.show()
+        Vdlalog.exec_()
+
+    def Filter(self):
+        text, ok = QtGui.QInputDialog.getText(self, 'Input Dialog', 
+            'Enter Search Word:')
+
+        if ok:
+            item = self.listWidget.currentItem()
+            print (unicode(item.text()))
+
+    def Column_setting(self):
+        print "ss"
+
+    def setting_Indexdat_listWidget(self):
+        #self.listWidget.clear()
+        print ("ss")
+        if os.path.isfile("IE9parser.db"):
+            print ("os")
+            self.listname = self.IndexdatsearchTable()
+            r=0
+            for listindex in self.listname:
+                print listindex
+                for item in self.listname[listindex]:
+                    print item
+                    newlist = QtGui.QListWidgetItem(item)
+                    self.Indexdat_listWidget.addItem(newlist)
+
+    def setting_WC_listWidget(self):
+        #self.listWidget.clear()
+        print ("ss")
         if os.path.isfile("WC_DB.db"):
+            print ("os")
             self.listname = self.searchTable()
             r=0
             for listindex in self.listname:
                 print listindex
                 for item in self.listname[listindex]:
+                    print item
                     newlist = QtGui.QListWidgetItem(item)
-                    self.listWidget.addItem(newlist)
+                    self.WC_listWidget.addItem(newlist)
 
-    def setting_tablewidget(self):
-        if os.path.isfile("WC_DB.db"):
+    def setting_Indexdat_tablewidget(self):
+        if os.path.isfile("IE9parser.db"):
             #item = self.listWidget.currentItem()
             #print (unicode(item.text()))
             #m=0
@@ -1909,14 +2525,16 @@ class Window(QtGui.QMainWindow):
             #        print (newitem)
             #        self.TableWidget.setItem(m, n, newitem)
             #        m = m+1
+            print ("ss")
+            #SearchKey_Parser()
             self.TableWidget.clear()
             #item = self.listWidget.currentItem()
             #print (unicode(item.text()))
 
-            conn = sqlite3.connect("WC_DB.db")
+            conn = sqlite3.connect("IE9parser.db")
             cursor = conn.cursor()
         
-            cursor.execute("PRAGMA TABLE_INFO (WC_Containers)")
+            cursor.execute("PRAGMA TABLE_INFO (Hisotry)")
             column = cursor.fetchall()
 
             columnname = {}
@@ -1939,7 +2557,7 @@ class Window(QtGui.QMainWindow):
                 m = m+1
             n=n+1
 
-            cursor.execute("select * from WC_Containers")
+            cursor.execute("select * from Hisotry order by "+columnname[0]+" asc")
             #cursor.execute("select * from "+unicode(item.text()))
             #datarow = cursor.fetchone()
             data = {}
@@ -1974,14 +2592,201 @@ class Window(QtGui.QMainWindow):
                     self.TableWidget.setItem(m, n, newitem)
                     n = n+1
                 data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+            font = QtGui.QFont()
+            font.setBold(True)
+
+            #self.TableWidget.item(1,1).setFont(font)
+            conn.commit()
+            conn.close()
+
+    def setting_WC_tablewidget(self):
+        if os.path.isfile("WC_DB.db"):
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            print ("ss")
+            #SearchKey_Parser()
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect("WC_DB.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO (WC_Containers)")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from WC_Containers order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                #print datarow
+
+                if datarow == None:
+                    #print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+            font = QtGui.QFont()
+            font.setBold(True)
+
+            #self.TableWidget.item(1,1).setFont(font)
+            conn.commit()
+            conn.close()
+
+    def resetting_Indexdat_tablewidget(self):
+        if os.path.isfile("IE9parser.db"):
+            item = self.WC_listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect("IE9parser.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO ("+unicode(item.text())+")")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from "+unicode(item.text())+" order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                print datarow
+
+                if datarow == None:
+                    print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
             #n=n+1
 
             conn.commit()
             conn.close()
-            
-    def resetting_tablewidget(self):
+                    
+    def resetting_WC_tablewidget(self):
         if os.path.isfile("WC_DB.db"):
-            item = self.listWidget.currentItem()
+            item = self.WC_listWidget.currentItem()
             #print (unicode(item.text()))
             #m=0
             #self.Tablename = self.searchTable()
@@ -2027,7 +2832,7 @@ class Window(QtGui.QMainWindow):
                 m = m+1
             n=n+1
 
-            cursor.execute("select * from "+unicode(item.text()))
+            cursor.execute("select * from "+unicode(item.text())+" order by "+columnname[0]+" asc")
             #cursor.execute("select * from "+unicode(item.text()))
             #datarow = cursor.fetchone()
             data = {}
@@ -2062,10 +2867,429 @@ class Window(QtGui.QMainWindow):
                     self.TableWidget.setItem(m, n, newitem)
                     n = n+1
                 data = {}
+            self.TableWidget.setSortingEnabled(True)
             #n=n+1
 
             conn.commit()
             conn.close()
+    """  
+    def setting_Indexdat_listWidget(self, fname):
+        #self.listWidget.clear()
+        self.fdirectory = fname
+        print ("ss")
+        if os.path.isfile(fname+"\\IE9parser.db"):
+            print ("os")
+            self.listname = self.searchTable()
+            r=0
+            for listindex in self.listname:
+                print listindex
+                for item in self.listname[listindex]:
+                    print item
+                    newlist = QtGui.QListWidgetItem(item)
+                    self.Indexdat_listWidget.addItem(newlist)
+
+    def setting_WC_listWidget(self, fname):
+        #self.listWidget.clear()
+        self.fdirectory = fname
+        print ("ss")
+        if os.path.isfile('%s'%fname+"\\collection\\IE10++\\WebCacheV01.dat"):
+            print ("os")
+            self.listname = self.searchTable()
+            r=0
+            for listindex in self.listname:
+                print listindex
+                for item in self.listname[listindex]:
+                    print item
+                    newlist = QtGui.QListWidgetItem(item)
+                    self.WC_listWidget.addItem(newlist)
+    
+    def setting_Indexdat_tablewidget(self, fname):
+        self.fdirectory = fname
+        if os.path.isfile(fname+"\\IE9parser.db"):
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            print ("ss")
+            SearchKey_Parser()
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect(fname+"\\IE9parser.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO (Hisotry)")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from Hisotry order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                #print datarow
+
+                if datarow == None:
+                    #print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+            font = QtGui.QFont()
+            font.setBold(True)
+
+            #self.TableWidget.item(1,1).setFont(font)
+            conn.commit()
+            conn.close()
+
+    def setting_WC_tablewidget(self, fname):
+        self.fdirectory = fname
+        if os.path.isfile(fname+"\\WC_DB.db"):
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            print ("ss")
+            SearchKey_Parser()
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect(fname+"\\WC_DB.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO (WC_Containers)")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from WC_Containers order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                #print datarow
+
+                if datarow == None:
+                    #print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+            font = QtGui.QFont()
+            font.setBold(True)
+
+            #self.TableWidget.item(1,1).setFont(font)
+            conn.commit()
+            conn.close()
+
+    def resetting_WC_tablewidget(self):
+        if os.path.isfile(self.fdirectory+"\\WC_DB.db"):
+            item = self.WC_listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect(self.fdirectory+"\\WC_DB.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO ("+unicode(item.text())+")")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from "+unicode(item.text())+" order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                print datarow
+
+                if datarow == None:
+                    print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+
+            conn.commit()
+            conn.close()
+             
+    def resetting_Indexdat_tablewidget(self):
+        if os.path.isfile(self.fdirectory+"\\IE9parser.db"):
+            item = self.WC_listWidget.currentItem()
+            #print (unicode(item.text()))
+            #m=0
+            #self.Tablename = self.searchTable()
+            #n=0
+            #print("self.setting_setting_tablewidget()")
+            #self.searchData()
+            #for key in self.Tablename:
+            #    print (key)
+            #    for item in self.Tablename[key]:
+            #        print (item)
+            #        self.TableWidget = QtGui.QTableWidget(len(self.Tablename), 1)
+            #        newitem = QtGui.QTableWidgetItem(item)
+            #        print (newitem)
+            #        self.TableWidget.setItem(m, n, newitem)
+            #        m = m+1
+            self.TableWidget.clear()
+            #item = self.listWidget.currentItem()
+            #print (unicode(item.text()))
+
+            conn = sqlite3.connect(self.fdirectory+"\\IE9parser.db")
+            cursor = conn.cursor()
+        
+            cursor.execute("PRAGMA TABLE_INFO ("+unicode(item.text())+")")
+            column = cursor.fetchall()
+
+            columnname = {}
+            num = 0
+            for i in column:
+                lists = i
+                for j in range(1,2):
+                    columnname[num] = lists[j]
+                    num = num+1
+
+            
+            self.TableWidget.setColumnCount(len(columnname))
+            n=0
+            m=0
+            #for k in range(len(columnname)):
+            for key in columnname:
+                #self.TableWidget = QtGui.QTableWidget(100, 100)
+                newitem = QtGui.QTableWidgetItem(columnname[key])
+                self.TableWidget.setHorizontalHeaderItem(m, newitem)
+                m = m+1
+            n=n+1
+
+            cursor.execute("select * from "+unicode(item.text())+" order by "+columnname[0]+" asc")
+            #cursor.execute("select * from "+unicode(item.text()))
+            #datarow = cursor.fetchone()
+            data = {}
+            
+            m=0
+            #datarow = cursor.fetchone()
+            #for datarow in cursor.fetchone():
+            #print datarow
+            n=0
+            r=0
+            while True:
+                index = 0
+                datarow = cursor.fetchone()
+                print datarow
+
+                if datarow == None:
+                    print ("data is None")
+                    break
+                r=r+1
+                self.TableWidget.setRowCount(r)
+                for j in range(len(columnname)):
+                    data[index] = datarow[j]
+                    index = index+1
+                    #print (datarow[j])
+                    #print (data[index])
+                    #for k in range(len(columnname)):
+
+                for datakey in data:
+                    #print (data[datakey])
+                    newitem = QtGui.QTableWidgetItem(data[datakey])
+                    #print (newitem)
+                    self.TableWidget.setItem(m, n, newitem)
+                    n = n+1
+                data = {}
+            self.TableWidget.setSortingEnabled(True)
+            #n=n+1
+
+            conn.commit()
+            conn.close()
+    """
+
+    def IndexdatsearchTable(self):
+        conn = sqlite3.connect("IE9parser.db")
+        cursor = conn.cursor()
+
+        list = {}
+        num = 0
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table', 'view') ORDER BY 1")
+        name = cursor.fetchall()
+        print name
+        for i in name:
+            list[num] = i
+            num = num+1
+
+        conn.commit()
+        conn.close()
+
+        return list
 
     def searchTable(self):
         conn = sqlite3.connect("WC_DB.db")
@@ -2136,6 +3360,105 @@ class Window(QtGui.QMainWindow):
 
         conn.commit()
         conn.close()
+        
+class VersionPopup(QtGui.QDialog):
+    def __init__(self, parent=Window):
+        super(VersionPopup, self).__init__(parent)
+
+        self.label1 = QtGui.QLabel('                                      ', self)
+        self.label1.move(130, 220)
+
+        self.setWindowTitle('Version')
+        self.resize(500, 300)
+
+class WriterPopup(QtGui.QDialog):
+    def __init__(self, parent=Window):
+        super(WriterPopup, self).__init__(parent)
+
+        self.label1 = QtGui.QLabel('                                      ', self)
+        self.label1.move(130, 220)
+
+        self.setWindowTitle('Writer')
+        self.resize(500, 300)
+
+class CollerterPopup(QtGui.QDialog):
+    def __init__(self, parent=Window):
+        super(CollerterPopup, self).__init__(parent)
+
+        self.fname = None
+
+        self.Filedirectory = QtGui.QLineEdit(self)
+        self.Filedirectory.move(40, 80)
+        self.Filedirectory.setFixedWidth(300)
+
+        Browse = QtGui.QPushButton("Select Directory", self)
+        Browse.move(380, 80)
+        Browse.clicked.connect(self.selectDirecotry)
+
+        self.IE_Checkbox = QtGui.QCheckBox('IE 10-- Collect', self)
+        self.IE_Checkbox.move(60, 150)
+
+        self.WC_Checkbox = QtGui.QCheckBox('IE 10++ Collect', self)
+        self.WC_Checkbox.move(200, 150)
+
+        self.Chrome_Checkbox = QtGui.QCheckBox('Chrome Collect', self)
+        self.Chrome_Checkbox.move(330, 150)
+
+        Collect = QtGui.QPushButton("Collect", self)
+        Collect.move(300, 250)
+        Collect.clicked.connect(self.CollectFile)
+
+        Cancel = QtGui.QPushButton("Cancel", self)
+        Cancel.move(400, 250)
+        Cancel.clicked.connect(self.close)
+
+        self.setWindowTitle('Collect')
+        self.resize(500, 300)
+    
+    def selectDirecotry(self):
+        self.fname = QtGui.QFileDialog.getExistingDirectory()
+
+        if self.fname:
+            self.Filedirectory.setText(str(self.fname))
+
+    def CollectFile(self):
+        if self.fname == None:
+            self.notFileExist()
+            return
+        if self.IE_Checkbox.checkState() == QtCore.Qt.Unchecked & self.WC_Checkbox.checkState() == QtCore.Qt.Unchecked & self.Chrome_Checkbox.checkState() == QtCore.Qt.Unchecked:
+            self.notCollect()
+            return
+
+        print self.fname
+        mkdir(self.fname)
+        if self.IE_Checkbox.checkState() == QtCore.Qt.Checked:
+            IE9_copyfile(self.fname)
+            print "ie success"
+        if self.WC_Checkbox.checkState() == QtCore.Qt.Checked:
+            #IE10_copydb(self.fname)
+            print "wc success"
+        if self.Chrome_Checkbox.checkState() == QtCore.Qt.Checked:
+            Chrome_copydb(self.fname)
+            Chrome_dbrename(self.fname)
+            print "ch success"
+
+        self.CollectFinish()
+        self.close()
+
+    def CollectFinish(self):
+        CollectFinish = QtGui.QMessageBox()
+        CollectFinish.setText("Collect Finish!!")
+        CollectFinish.exec_()
+
+    def notFileExist(self):
+        notfileExist = QtGui.QMessageBox()
+        notfileExist.setText("file directory not exist")
+        notfileExist.exec_()
+
+    def notCollect(self):
+        notcollect = QtGui.QMessageBox()
+        notcollect.setText("Not Select Collect Version!!")
+        notcollect.exec_()
 
 class MyPopup(QtGui.QDialog):
     def __init__(self, parent=Window):
@@ -2144,25 +3467,35 @@ class MyPopup(QtGui.QDialog):
         self.fname = None
 
         self.Filedirectory = QtGui.QLineEdit(self)
-        self.Filedirectory.move(100, 150)
+        self.Filedirectory.move(40, 80)
         self.Filedirectory.setFixedWidth(300)
 
-        Browse = QtGui.QPushButton("Browse...", self)
-        Browse.move(500, 150)
+        Browse = QtGui.QPushButton("Select Directory", self)
+        Browse.move(380, 80)
         Browse.clicked.connect(self.selectFile)
 
-        Finish = QtGui.QPushButton("Finish", self)
-        Finish.move(450, 650)
-        Finish.clicked.connect(self.finishmethod)
+        Finish = QtGui.QPushButton("Analysis", self)
+        Finish.move(290, 250)
+        Finish.clicked.connect(self.Analysismethod)
 
         Cancel = QtGui.QPushButton("Cancel", self)
-        Cancel.move(550, 650)
+        Cancel.move(390, 250)
         Cancel.clicked.connect(self.close)
+        
+        combo = QtGui.QComboBox(self)
+        combo.addItem("1")
+        combo.addItem("2")
+        combo.addItem("3")
+        combo.addItem("4")
+        combo.addItem("5")
+        combo.setFixedWidth(410)
 
+        combo.move(49, 150)
+        """
         left = QtGui.QFrame(self)
         left.setFrameShape(QtGui.QFrame.StyledPanel)
         left.setGeometry(100, 200, 480, 300)
-
+        
         self.label1 = QtGui.QLabel('                                      ', self)
         self.label1.move(130, 220)
 
@@ -2183,25 +3516,18 @@ class MyPopup(QtGui.QDialog):
 
         self.label7 = QtGui.QLabel('                                      ', self)
         self.label7.move(330, 340)
+        """
+        
 
-        combo = QtGui.QComboBox(self)
-        combo.addItem("1")
-        combo.addItem("2")
-        combo.addItem("3")
-        combo.addItem("4")
-        combo.addItem("5")
-        combo.setFixedWidth(410)
-
-        combo.move(130, 540)
-
-        self.setWindowTitle('Select File')
-        self.resize(650, 700)
+        self.setWindowTitle('Analysis')
+        self.resize(500, 300)
 
     def selectFile(self):
-        self.fname, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".")
-        
+        self.fname = QtGui.QFileDialog.getExistingDirectory()
+
         if self.fname:
             self.Filedirectory.setText(str(self.fname))
+        """
             ese = ESENT_DB(self.fname)
             Catalog = ese.DBCatalog()
             self.label1.setText("CheckSum : 0x%x" % Catalog[0])
@@ -2211,25 +3537,24 @@ class MyPopup(QtGui.QDialog):
             self.label5.setText("0x%x" % Catalog[4])
             self.label6.setText("PageSize : %d" % Catalog[5])
             self.label7.setText("Number of pages : %d" % Catalog[6])
-
-    def finishmethod(self):
-        if(self.fname == None):
+        """
+    def Analysismethod(self):
+        if self.fname == None:
             self.notExist()
             return
         
-        global_check = 1
         self.close()
         WC_Data_Insert(self.fname)
-        Window.searchData(Window)
+        IEDownloadparser(self.fname)
+        IE9parser(self.fname)
+        #Window.setting_Indexdat_listWidget(Window, self.fname)
+        #Window.setting_WC_listWidget(Window, self.fname)
+        #Window.setting_tablewidget(Window, self.fname)
 
     def notExist(self):
         notexist = QtGui.QMessageBox()
         notexist.setText("file directory not exist")
         notexist.exec_()
-
-    def __del__(self):
-        print ("ss")
-
 
 def main():                                     # main code
     app = QtGui.QApplication(sys.argv)
